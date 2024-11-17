@@ -101,7 +101,7 @@
         document.body.appendChild(renderer.domElement);
 
         // Effect Composer for post-processing
-        var composer = new THREE.EffectComposer(renderer);
+        var composer = new EffectComposer(renderer); // Removed THREE.
         composer.setSize(window.innerWidth, window.innerHeight);
 
         // Chromatic Aberration Shader
@@ -134,10 +134,10 @@
         };
 
         // Post-processing passes
-        var renderPass = new THREE.RenderPass(scene, camera);
+        var renderPass = new RenderPass(scene, camera); // Removed THREE.
         composer.addPass(renderPass);
 
-        var chromaticAberrationPass = new THREE.ShaderPass(ChromaticAberrationShader);
+        var chromaticAberrationPass = new ShaderPass(ChromaticAberrationShader); // Removed THREE.
         composer.addPass(chromaticAberrationPass);
 
         // Lights
