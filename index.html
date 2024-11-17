@@ -77,80 +77,75 @@
     </div>
 
     <!-- Include Three.js and Add-ons -->
-    <script type="module">
-        import * as THREE from 'https://unpkg.com/three@0.159.0/build/three.module.js';
-        import { OrbitControls } from 'https://unpkg.com/three@0.159.0/examples/jsm/controls/OrbitControls.js';
-        import { GLTFLoader } from 'https://unpkg.com/three@0.159.0/examples/jsm/loaders/GLTFLoader.js';
-        import { DRACOLoader } from 'https://unpkg.com/three@0.159.0/examples/jsm/loaders/DRACOLoader.js';
-        import { EffectComposer } from 'https://unpkg.com/three@0.159.0/examples/jsm/postprocessing/EffectComposer.js';
-        import { RenderPass } from 'https://unpkg.com/three@0.159.0/examples/jsm/postprocessing/RenderPass.js';
-        import { ShaderPass } from 'https://unpkg.com/three@0.159.0/examples/jsm/postprocessing/ShaderPass.js';
+    <script src="https://cdn.jsdelivr.net/npm/three@0.123.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.123.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.123.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.123.0/examples/js/loaders/DRACOLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.123.0/examples/js/postprocessing/EffectComposer.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.123.0/examples/js/postprocessing/RenderPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.123.0/examples/js/postprocessing/ShaderPass.js"></script>
 
+    <script>
         // Scene setup
-        const scene = new THREE.Scene();
+        var scene = new THREE.Scene();
         scene.background = new THREE.Color(0x111111);
         scene.fog = new THREE.FogExp2(0x111111, 0.02);
 
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         camera.position.set(5, 5, 5);
 
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        var renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         document.body.appendChild(renderer.domElement);
 
         // Effect Composer for post-processing
-        const composer = new EffectComposer(renderer);
+        var composer = new THREE.EffectComposer(renderer);
         composer.setSize(window.innerWidth, window.innerHeight);
 
         // Chromatic Aberration Shader
-        const ChromaticAberrationShader = {
+        var ChromaticAberrationShader = {
             uniforms: {
                 'tDiffuse': { value: null },
                 'offset': { value: new THREE.Vector2(0.005, 0.005) }
             },
-            vertexShader: /* glsl */`
-                varying vec2 vUv;
-                void main() {
-                    vUv = uv;
-                    gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
-                }
-            `,
-            fragmentShader: /* glsl */`
-                uniform sampler2D tDiffuse;
-                uniform vec2 offset;
-                varying vec2 vUv;
-
-                void main() {
-                    vec2 center = vec2(0.5, 0.5);
-                    float dist = distance(vUv, center);
-
-                    // Increase effect towards edges
-                    vec2 aberration = offset * pow(dist, 4.0) * 2.0;
-
-                    float r = texture2D(tDiffuse, vUv + aberration).r;
-                    float g = texture2D(tDiffuse, vUv).g;
-                    float b = texture2D(tDiffuse, vUv - aberration).b;
-
-                    gl_FragColor = vec4(r, g, b, 1.0);
-                }
-            `
+            vertexShader: [
+                'varying vec2 vUv;',
+                'void main() {',
+                '    vUv = uv;',
+                '    gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );',
+                '}'
+            ].join('\n'),
+            fragmentShader: [
+                'uniform sampler2D tDiffuse;',
+                'uniform vec2 offset;',
+                'varying vec2 vUv;',
+                'void main() {',
+                '    vec2 center = vec2(0.5, 0.5);',
+                '    float dist = distance(vUv, center);',
+                '    vec2 aberration = offset * pow(dist, 4.0) * 2.0;',
+                '    float r = texture2D(tDiffuse, vUv + aberration).r;',
+                '    float g = texture2D(tDiffuse, vUv).g;',
+                '    float b = texture2D(tDiffuse, vUv - aberration).b;',
+                '    gl_FragColor = vec4(r, g, b, 1.0);',
+                '}'
+            ].join('\n')
         };
 
         // Post-processing passes
-        const renderPass = new RenderPass(scene, camera);
+        var renderPass = new THREE.RenderPass(scene, camera);
         composer.addPass(renderPass);
 
-        const chromaticAberrationPass = new ShaderPass(ChromaticAberrationShader);
+        var chromaticAberrationPass = new THREE.ShaderPass(ChromaticAberrationShader);
         composer.addPass(chromaticAberrationPass);
 
         // Lights
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        var ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
         scene.add(ambientLight);
 
         // Top-down spotlight
-        const topSpotlight = new THREE.SpotLight(0xffffff, 40);
+        var topSpotlight = new THREE.SpotLight(0xffffff, 40);
         topSpotlight.position.set(0, 10, 0);
         topSpotlight.angle = Math.PI / 3;
         topSpotlight.penumbra = 0.2;
@@ -165,7 +160,7 @@
         scene.add(topSpotlight.target);
 
         // Bottom-up spotlight
-        const bottomSpotlight = new THREE.SpotLight(0xffffff, 20);
+        var bottomSpotlight = new THREE.SpotLight(0xffffff, 20);
         bottomSpotlight.position.set(0, -10, 0);
         bottomSpotlight.angle = Math.PI / 3;
         bottomSpotlight.penumbra = 0.2;
@@ -179,15 +174,15 @@
         scene.add(bottomSpotlight);
         scene.add(bottomSpotlight.target);
 
-        const rightLight = new THREE.PointLight(0xff0066, 20);
+        var rightLight = new THREE.PointLight(0xff0066, 20);
         rightLight.position.set(8, 3, 0);
         scene.add(rightLight);
 
-        const leftLight = new THREE.PointLight(0x0066ff, 20);
+        var leftLight = new THREE.PointLight(0x0066ff, 20);
         leftLight.position.set(-8, 3, 0);
         scene.add(leftLight);
 
-        const rimLight = new THREE.SpotLight(0xffffff, 25);
+        var rimLight = new THREE.SpotLight(0xffffff, 25);
         rimLight.position.set(0, 2, -6);
         rimLight.angle = Math.PI / 4;
         rimLight.penumbra = 0.5;
@@ -196,41 +191,41 @@
         scene.add(rimLight);
 
         // Controls
-        const controls = new OrbitControls(camera, renderer.domElement);
+        var controls = new THREE.OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
 
         // Loaders
-        const dracoLoader = new DRACOLoader();
-        dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
+        var dracoLoader = new THREE.DRACOLoader();
+        dracoLoader.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/');
 
-        const loader = new GLTFLoader();
+        var loader = new THREE.GLTFLoader();
         loader.setDRACOLoader(dracoLoader);
 
         // Global references
         window.objectsLibrary = new Map();
         window.currentObject = null;
-        let currentIndex = 0;
+        var currentIndex = 0;
 
         // Arrow controls
-        const leftArrow = document.getElementById('leftArrow');
-        const rightArrow = document.getElementById('rightArrow');
+        var leftArrow = document.getElementById('leftArrow');
+        var rightArrow = document.getElementById('rightArrow');
 
         function updateArrowVisibility() {
-            const objects = Array.from(window.objectsLibrary.keys());
+            var objects = Array.from(window.objectsLibrary.keys());
             leftArrow.style.display = currentIndex > 0 ? 'block' : 'none';
             rightArrow.style.display = currentIndex < objects.length - 1 ? 'block' : 'none';
         }
 
-        leftArrow.onclick = () => {
+        leftArrow.onclick = function() {
             if (currentIndex > 0) {
                 currentIndex--;
-                const objects = Array.from(window.objectsLibrary.keys());
+                var objects = Array.from(window.objectsLibrary.keys());
                 switchToObject(objects[currentIndex]);
             }
         };
 
-        rightArrow.onclick = () => {
-            const objects = Array.from(window.objectsLibrary.keys());
+        rightArrow.onclick = function() {
+            var objects = Array.from(window.objectsLibrary.keys());
             if (currentIndex < objects.length - 1) {
                 currentIndex++;
                 switchToObject(objects[currentIndex]);
@@ -238,17 +233,17 @@
         };
 
         function updateObjectSwitcher() {
-            const switcher = document.getElementById('object-switcher');
+            var switcher = document.getElementById('object-switcher');
             switcher.innerHTML = '';
-            window.objectsLibrary.forEach((object, name) => {
-                const button = document.createElement('button');
+            window.objectsLibrary.forEach(function(object, name) {
+                var button = document.createElement('button');
                 button.className = 'object-button';
                 if (window.currentObject === object) {
                     button.classList.add('active');
                 }
                 button.textContent = name;
-                button.onclick = () => {
-                    const objects = Array.from(window.objectsLibrary.keys());
+                button.onclick = function() {
+                    var objects = Array.from(window.objectsLibrary.keys());
                     currentIndex = objects.indexOf(name);
                     switchToObject(name);
                 };
@@ -274,54 +269,57 @@
             updateObjectSwitcher();
         }
 
-        async function loadModels() {
-            try {
-                const response = await fetch('models/models.json');
-                const modelFiles = await response.json();
+        function loadModels() {
+            fetch('models/models.json')
+                .then(function(response) { return response.json(); })
+                .then(function(modelFiles) {
+                    var promises = [];
+                    modelFiles.forEach(function(fileName) {
+                        promises.push(loadObject(fileName));
+                    });
 
-                for (const fileName of modelFiles) {
-                    await loadObject(fileName);
-                }
-
-                if (modelFiles.length > 0) {
-                    currentIndex = 0;
-                    switchToObject(modelFiles[0].replace(/\.[^/.]+$/, ""));
-                }
-            } catch (error) {
-                console.error('Error loading models:', error);
-            }
+                    Promise.all(promises).then(function() {
+                        if (modelFiles.length > 0) {
+                            currentIndex = 0;
+                            switchToObject(modelFiles[0].replace(/\.[^/.]+$/, ""));
+                        }
+                    });
+                })
+                .catch(function(error) {
+                    console.error('Error loading models:', error);
+                });
         }
 
         function loadObject(fileName) {
-            const url = `models/${fileName}`;
+            var url = 'models/' + fileName;
 
-            return new Promise((resolve) => {
-                loader.load(url, function (gltf) {
-                    const object = gltf.scene;
+            return new Promise(function(resolve) {
+                loader.load(url, function(gltf) {
+                    var object = gltf.scene;
 
-                    object.traverse(function (node) {
+                    object.traverse(function(node) {
                         if (node.isMesh) {
                             node.castShadow = true;
                             node.receiveShadow = true;
                         }
                     });
 
-                    const box = new THREE.Box3().setFromObject(object);
-                    const center = box.getCenter(new THREE.Vector3());
+                    var box = new THREE.Box3().setFromObject(object);
+                    var center = box.getCenter(new THREE.Vector3());
                     object.position.sub(center);
 
-                    const size = box.getSize(new THREE.Vector3());
-                    const maxDim = Math.max(size.x, size.y, size.z);
-                    const scale = 5 / maxDim;
+                    var size = box.getSize(new THREE.Vector3());
+                    var maxDim = Math.max(size.x, size.y, size.z);
+                    var scale = 5 / maxDim;
                     object.scale.multiplyScalar(scale * 2);
 
-                    object.rotation.x = THREE.MathUtils.degToRad(2);
+                    object.rotation.x = THREE.Math.degToRad(2);
 
-                    const name = fileName.replace(/\.[^/.]+$/, "");
+                    var name = fileName.replace(/\.[^/.]+$/, "");
                     window.objectsLibrary.set(name, object);
 
                     resolve();
-                }, undefined, function (error) {
+                }, undefined, function(error) {
                     console.error('Error loading object:', error);
                     resolve();
                 });
@@ -330,8 +328,6 @@
 
         loadModels();
 
-        let clock = new THREE.Clock();
-
         function animate() {
             requestAnimationFrame(animate);
             controls.update();
@@ -339,7 +335,7 @@
             if (window.currentObject) {
                 window.currentObject.rotation.y += 0.005;
 
-                const angle = window.currentObject.rotation.y;
+                var angle = window.currentObject.rotation.y;
                 rimLight.position.x = Math.sin(angle) * 6;
                 rimLight.position.z = -Math.cos(angle) * 6;
             }
