@@ -406,7 +406,7 @@
                     const scale = 5 / maxDim;
                     object.scale.multiplyScalar(scale * 2);
 
-                    object.rotation.z = THREE.MathUtils.degToRad(-5);
+                    object.rotation.x = THREE.MathUtils.degToRad(-5);
 
                     const name = fileName.replace(/\.[^/.]+$/, "");
                     window.objectsLibrary.set(name, object);
