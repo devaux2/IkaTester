@@ -175,9 +175,9 @@
         // Bloom Pass (adjust parameters as needed)
         const bloomPass = new UnrealBloomPass(
             new THREE.Vector2(window.innerWidth, window.innerHeight),
-            0.24, // Bloom strength
-            0.5,  // Radius
-            0.2   // Threshold
+            0.1, // Bloom strength
+            0.2,  // Radius
+            0.1   // Threshold
         );
         composer.addPass(bloomPass);
 
@@ -186,7 +186,7 @@
         scene.add(ambientLight);
 
         // Top-down spotlight
-        const topSpotlight = new THREE.SpotLight(0xffffff, 30);
+        const topSpotlight = new THREE.SpotLight(0xffffff, 20);
         topSpotlight.position.set(0, 10, 0);
         topSpotlight.angle = Math.PI / 3;
         topSpotlight.penumbra = 0.2;
@@ -406,7 +406,7 @@
                     const scale = 5 / maxDim;
                     object.scale.multiplyScalar(scale * 2);
 
-                    object.rotation.x = THREE.MathUtils.degToRad(0.5);
+                    object.rotation.x = THREE.MathUtils.degToRad(0);
 
                     const name = fileName.replace(/\.[^/.]+$/, "");
                     window.objectsLibrary.set(name, object);
